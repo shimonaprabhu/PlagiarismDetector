@@ -13,6 +13,7 @@
 # 	Fi(S2,S3,S4) = S2 xor S3 xor S4 21<=i<=40
 # 	Fi(S2,S3,S4) = (S2^S3)v(S2^S4)v(S3^S4) 41<=i<=60
 #	Fi(S2,S3,S4) = S2 xor S3 xor S4 61<=i<=80
+
 import textwrap
 
 def wordret(wa,wb,wc,wd):
@@ -56,7 +57,7 @@ words=textwrap.wrap(binmessage, 32)
 #print(len(words))
 for i in range(16,80):
 	words.append(wordret(words[i-3],words[i-8],words[i-14],words[i-16]))
-
+print(len(words))
 #print(words)
 
 k1=0x5A827999

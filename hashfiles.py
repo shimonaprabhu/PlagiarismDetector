@@ -1,82 +1,121 @@
-def chunks(messageLength, chunkSize):
-        chunkValues = []
-        for i in range(0, len(messageLength), chunkSize):
-            chunkValues.append(messageLength[i:i+chunkSize])
+#FINAL 
+import textwrap
+import sys
 
-        return chunkValues
+def wordret(wa,wb,wc,wd):
+	a=int(wa,2)^int(wb,2)^int(wc,2)^int(wd,2)
+	return '{0:032b}'.format(a)
 
-def leftRotate(chunk, rotateLength):
-    return ((chunk << rotateLength) | (chunk >> (32 - rotateLength))) &  0xffffffff 
+def F1(S2,S3,S4):
+	return (S2&S3)|(~S2&S4)
+def F2(S2,S3,S4):
+	return S2^S3^S4
+def F3(S2,S3,S4):
+	return (S2&S3)|(S2&S4)|(S3&S4)
+def F4(S2,S3,S4):
+	return S2^S3^S4
 
-def sha1Function(message):
-    #initial hash values
-    h0 = 0x67452301
-    h1 = 0xEFCDAB89
-    h2 = 0x98BADCFE
-    h3 = 0x10325476
-    h4 = 0xC3D2E1F0
+#print(sys.argv[1])
+filename=sys.argv[1]
+handle=open(filename,'r')
+binmessage= (''.join(format(ord(x), 'b') for x in handle.read()))
+#binmessage='{0:b}'.format(ord(x) for x in message
+#print(binmessage)
+#print(len(binmessage))
 
-    
-    messageLength = ""
-
-    #preprocessing
-    for char in range(len(message)):
-        messageLength += '{0:08b}'.format(ord(message[char]))
-
-    temp = messageLength    
-    messageLength += '1'
-
-    while(len(messageLength) % 512 != 448):
-        messageLength += '0'
-    
-    messageLength += '{0:064b}'.format(len(temp))
-    chunk = chunks(messageLength, 512)
-
-    for eachChunk in chunk:
-        words = chunks(eachChunk, 32)
-        w = [0] * 80
-        for n in range(0, 16):
-            w[n] = int(words[n], 2)
-        
-        for i in range(16, 80):
-            w[i] = leftRotate((w[i-3] ^ w[i-8] ^ w[i-14] ^ w[i-16]), 1)  
-        
-        #Initialize hash value for this chunk:
-        a = h0
-        b = h1
-        c = h2
-        d = h3
-        e = h4
-
-        #main loop:
-        for i in range(0, 80):
-            if 0 <= i <= 19:
-                f = (b & c) | ((~b) & d)
-                k = 0x5A827999
-
-            elif 20 <= i <= 39:
-                f = b ^ c ^ d
-                k = 0x6ED9EBA1
-
-            elif 40 <= i <= 59:
-                f = (b & c) | (b & d) | (c & d)
-                k = 0x8F1BBCDC
-
-            elif 60 <= i <= 79:
-                f = b ^ c ^ d
-                k = 0xCA62C1D6
-
-            a, b, c, d, e = ((leftRotate(a, 5) + f + e + k + w[i]) & 0xffffffff, a, leftRotate(b, 30), c, d)
-
-        h0 = h0 + a & 0xffffffff
-        h1 = h1 + b & 0xffffffff
-        h2 = h2 + c & 0xffffffff
-        h3 = h3 + d & 0xffffffff
-        h4 = h4 + e & 0xffffffff
-
-    return '%08x%08x%08x%08x%08x' % (h0, h1, h2, h3, h4)
+def process(chunk):
+	words=[]
+	words=textwrap.wrap(chunk, 32)
+	for i in range(16,80):
+		words.append(wordret(words[i-3],words[i-8],words[i-14],words[i-16]))
+	return words
+	
+def compress(words):
+	k1=0x5A827999
+	k2=0x6ED9EBA1
+	k3=0x8F1BBCDC
+	k4=0xCA62C1D6
+	s1 = 0x67452301
+	s2 = 0xEFCDAB89
+	s3 = 0x98BADCFE
+	s4 = 0x10325476
+	s5 = 0xC3D2E1F0
+	h1=s1
+	h2=s2
+	h3=s3
+	h4=s4
+	h5=s5
+	for i in range(0,20):
+		temp=s5+(s1<<5)+F1(s2,s3,s4)+k1+int(words[i],2)
+		s5=s4
+		s4=s3
+		s3=s2
+		s2=s1
+		s1=temp
+	for i in range(20,40):
+		temp=s5+(s1<<5)+F2(s2,s3,s4)+k2+int(words[i],2)
+		s5=s4
+		s4=s3
+		s3=s2
+		s2=s1
+		s1=temp
+	for i in range(40,60):
+		temp=s5+(s1<<5)+F3(s2,s3,s4)+k3+int(words[i],2)
+		s5=s4
+		s4=s3
+		s3=s2
+		s2=s1
+		s1=temp
+	for i in range(60,80):
+		temp=s5+(s1<<5)+F4(s2,s3,s4)+k4+int(words[i],2)
+		s5=s4
+		s4=s3	
+		s3=s2
+		s2=s1
+		s1=temp
+	h1 = h1 + s1 & 0xffffffff
+	h2 = h2 + s2 & 0xffffffff
+	h3 = h3 + s3 & 0xffffffff
+	h4 = h4 + s4 & 0xffffffff
+	h5 = h5 + s5 & 0xffffffff
+	return h1,h2,h3,h4,h5
+#print(words)
 
 
-plainText = raw_input("Enter your message:")
-sha1Hash = sha1Function(plainText)
-print(sha1Hash)
+length=len(binmessage)
+low=0
+high=448
+while(length>448):
+	chunk=binmessage[low:high]
+	binlength='{0:064b}'.format(448)
+	chunk+=binlength
+	obj1=process(chunk)
+	length=length-448
+	low=low+448
+	high=high+448
+	obj2=compress(obj1)
+
+if(length==447):
+	binmessage+='1'
+	#append length
+	length='{0:064b}'.format(length)
+	binmessage+=length
+	obj1=process(binmessage)
+	obj2=compress(obj1)
+elif(length<447):
+	#binmessage='{0:b}'.format(ord(x) for x in message
+	binmessage+='1'
+	length=len(binmessage)
+	for i in range(length,448):
+		binmessage+='0'
+	#append length
+	length='{0:064b}'.format(length)
+	binmessage+=length
+	#print(binmessage)
+	#print(len(binmessage))
+	obj1=process(binmessage)
+	obj2=compress(obj1)
+hand=open('hashcontent','a')
+hand.write('%08x%08x%08x%08x%08x' % (obj2[0],obj2[1],obj2[2],obj2[3],obj2[4])+" "+filename+"\n")
+#print('%08x%08x%08x%08x%08x' % (obj2[0],obj2[1],obj2[2],obj2[3],obj2[4]))
+

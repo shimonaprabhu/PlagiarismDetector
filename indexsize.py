@@ -17,7 +17,8 @@
 #    print(filenames)
 #    statinfo = os.stat(filenames[2])
 #    statinfo.st_size
-#    i=i+1;
+#    i=i+1; 
+#if index_entry.has_key(os.stat(arr[i]).st_size):
 
 import os
 '''Create a dictionary to enter values of the size of files as keys and names of the files as the values'''
@@ -30,7 +31,7 @@ handle=open('indexfile','a')
 '''for every file, we check if the size is already present as a key. If not, we add an entry. If yes, we append. We use os system methods for the same.'''
 for i in range(len(arr)):
 	#print(os.stat(arr[i]).st_size)
-	if index_entry.has_key(os.stat(arr[i]).st_size):
+	if (os.stat(arr[i]).st_size in index_entry):
 		index_entry[os.stat(arr[i]).st_size].append(arr[i])
 	else:
 		index_entry[os.stat(arr[i]).st_size] = [ arr[i] ]
