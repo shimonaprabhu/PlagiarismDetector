@@ -16,6 +16,10 @@ def get():
 		#print(a[0])
 		#print(a[1:])
 		index_search[a[0]]=(a[1:])
+	if filenm not in index_search.values():
+		cmd='python3 gui5.py'
+		os.system(cmd)
+		exit()
 	size=os.stat(filenm).st_size
 	if str(size) in index_search.keys():
 		file_list=index_search[str(size)]
@@ -25,7 +29,7 @@ def get():
 		os.system(cmd)
 	cmd2='python3 del.py '+option
 	os.system(cmd2)
-	root1=Tk()
+	'''root1=Tk()
 	root1.title('Alert!')
 	root1.configure(background="white")
 	root1.geometry("500x50") 
@@ -35,7 +39,7 @@ def get():
 	else:
 		Label2=Label(root1,text="Duplicate files have been moved to Bin folder",bg="white",font=("Arial", 12))
 		Label2.pack()
-	root1.mainloop()
+	root1.mainloop()'''
 	#print(size)
 	#print(index_search)
 	#cmd='python3 hashfiles.py '+e.get()
